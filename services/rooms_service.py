@@ -44,7 +44,9 @@ def add_room():
     query = "INSERT INTO config (room_id, seat_id, status, taken_by) VALUES (%s, %s, %s, %s)"
     for i in range(0, length):
         for j in range(0, breadth):
-            values = (room_id, i * breadth + j, 'available', None)
+            seat_id = i * breadth + j
+            seat_availability = 'available' if seat_id % 2 == 0 else 'full'
+            values = (room_id, seat_id, seat_availability, None)
             try:
                 cursor.execute(query, values)
             except Error as err:
@@ -54,19 +56,49 @@ def add_room():
     return 'Hello'
 
 
-@room_blueprint.route('/rooms/get-current-configuration')
-def get_current_config():
+@room_blueprint.route('/rooms/get-current-configuration/<room_id>')
+def get_current_config(room_id):
     cursor = db.cursor()
-    info = request.get_json()
-
-    room_id = info['room_id']
+    # info = request.get_json()
+    # room_id = info['room_id']
 
     query = "SELECT * FROM config WHERE room_id = '" + room_id + "'"
-
-    return 'Hello'
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        seats = []
+        for i in range(0, len(result)):
+            curr_seat = result[i]
+            curr_seat_info = {
+                'id': curr_seat[1],
+                'isReserved': True if curr_seat[2] == 'full' else False,
+                'number': curr_seat[1]
+            }
+            seats.append(curr_seat_info)
+        return {'seats' : seats}
+    except Error as err:
+        print(err)
+    finally:
+        cursor.close()
+    return {'response': 'ERROR'}
 
 
 @room_blueprint.route('/rooms/choose-seat', methods=['POST'])
 def choose_seat():
-    return 'Hello'
+    info = request.get_json()
+    room_id = info['room_id']
+    seat_id = str(info['seat_id'])
+    email = info['email']
+    cursor = db.cursor()
+    query = "UPDATE config SET status = 'full', taken_by = '" + email + "' where room_id = '" + room_id + "' and seat_id = " + seat_id
+
+    try:
+        cursor.execute(query)
+    except Error as err:
+        print(err)
+    finally:
+        db.commit()
+        cursor.close()
+
+    return {'response': 'OK'}
 
