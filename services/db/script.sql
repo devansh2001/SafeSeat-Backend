@@ -6,3 +6,8 @@ CREATE TABLE user (
     password varchar(32),
     role varchar(16)
 );
+
+CREATE TABLE takes (
+    email varchar(128) NOT NULL,
+    class varchar(16) NOT NULL
+);

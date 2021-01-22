@@ -53,7 +53,8 @@ def get_user(email):
             'name': user_result[0],
             'email': user_result[1],
             'password': user_result[2],
-            'role': user_result[3]
+            'role': user_result[3],
+            'classes': get_classes(user_result[1])
         }
         return user
     except Error as err:
@@ -65,4 +66,51 @@ def get_user(email):
 
 @user_blueprint.route('/user/change-classes', methods=['POST'])
 def modify_classes():
-    return 'Done'
+    cursor = db.cursor()
+    info = request.get_json()
+
+    email = info['email']
+    classes = info['classes']
+
+    query = "DELETE FROM takes where email = '" + email + "'"
+    try:
+        cursor.execute(query)
+    except Error as e:
+        print(e)
+    finally:
+        db.commit()
+        cursor.close()
+
+    cursor = db.cursor()
+    query = "INSERT INTO takes (email, class) VALUES (%s, %s)"
+    try:
+        for i in range(0, len(classes)):
+            values = (email, classes[i])
+            cursor.execute(query, values)
+    except Error as e:
+        print(e)
+    finally:
+        db.commit()
+        cursor.close()
+
+    return {'response': 'OK'}
+
+
+def get_classes(email):
+    cursor = db.cursor()
+
+    query = "SELECT class FROM takes WHERE email = '" + email + "'"
+    print("Executing: " + query)
+    classes = []
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        for i in range(0, len(result)):
+            classes.append(result[i])
+    except Error as err:
+        print(err)
+    finally:
+        cursor.close()
+    
+    
+    return classes
