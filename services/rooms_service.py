@@ -62,19 +62,40 @@ def get_current_config(room_id):
     # info = request.get_json()
     # room_id = info['room_id']
 
+    query = "SELECT length, breadth from room where room_id = '" + room_id + "'"
+    length = 0
+    breadth = 0
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        result = result[0]
+        length = result[0]
+        breadth = result[1]
+    except Error as err:
+        print(err)
+    finally:
+        cursor.close()
+    
+    print(length, breadth)
+
+    cursor = db.cursor()
+
     query = "SELECT * FROM config WHERE room_id = '" + room_id + "'"
     try:
         cursor.execute(query)
         result = cursor.fetchall()
         seats = []
-        for i in range(0, len(result)):
-            curr_seat = result[i]
-            curr_seat_info = {
-                'id': curr_seat[1],
-                'isReserved': True if curr_seat[2] == 'full' else False,
-                'number': curr_seat[1]
-            }
-            seats.append(curr_seat_info)
+        for i in range(0, length):
+            curr_row = []
+            for j in range(0, breadth):
+                curr_seat = result[i * breadth + j]
+                curr_seat_info = {
+                    'id': curr_seat[1],
+                    'isReserved': True if curr_seat[2] == 'full' else False,
+                    'number': curr_seat[1]
+                }
+                curr_row.append(curr_seat_info)
+            seats.append(curr_row)
         return {'seats' : seats}
     except Error as err:
         print(err)
