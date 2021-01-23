@@ -55,6 +55,26 @@ def add_room():
     cursor.close()
     return 'Hello'
 
+@room_blueprint.route('/rooms/dimension/<room_id>')
+def get_room_dimensions(room_id):
+    cursor = db.cursor()
+    query = "SELECT length, breadth from room where room_id = '" + room_id + "'"
+    length = 0
+    breadth = 0
+    print(query)
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        result = result[0]
+        length = result[0]
+        breadth = result[1]
+    except Error as err:
+        print(err)
+    finally:
+        cursor.close()
+    
+    print(length, breadth)
+    return {'length': length,'breadth': breadth}
 
 @room_blueprint.route('/rooms/get-current-configuration/<room_id>')
 def get_current_config(room_id):
