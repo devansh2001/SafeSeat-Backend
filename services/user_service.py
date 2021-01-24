@@ -56,6 +56,7 @@ def get_user(email):
             'role': user_result[3],
             'classes': get_classes(user_result[1])
         }
+        print(user)
         return user
     except Error as err:
         print(err)

@@ -19,25 +19,6 @@ cursor.execute("USE " + name)
 def user_test():
     return 'Rooms Test'
 
-@room_blueprint.route('/rooms/add-class', methods=['POST'])
-def add_class():
-    class_info = request.get_json()
-    course_id = class_info['courseID']
-    room_id = class_info['roomID']
-    timing = class_info['timing']
-    
-    query = "INSERT INTO class_to_room (room_id, class_id, timing) VALUES (%s, %s, %s)"
-    values = (room_id, course_id, timing)
-    cursor = db.cursor()
-    try:
-        cursor.execute(query, values)
-    except Error as err:
-        print(err)
-    finally:
-        db.commit()
-        cursor.close()
-    
-    return {'response': 'OK'}
 
 @room_blueprint.route('/rooms/add-room', methods=['POST'])
 def add_room():
@@ -162,3 +143,34 @@ def choose_seat():
 
     return {'response': 'OK'}
 
+@room_blueprint.route('/rooms/add-class', methods=['POST'])
+def add_class():
+    class_info = request.get_json()
+    course_id = class_info['courseID']
+    room_id = class_info['roomID']
+    timing = class_info['timing']
+    email = class_info['email']
+    
+    query = "INSERT INTO class_to_room (room_id, class_id, timing) VALUES (%s, %s, %s)"
+    values = (room_id, course_id, timing)
+    cursor = db.cursor()
+    try:
+        cursor.execute(query, values)
+    except Error as err:
+        print(err)
+    finally:
+        db.commit()
+        cursor.close()
+    
+    query = "INSERT INTO takes (email, class) VALUES (%s, %s)"
+    values = (email, course_id)
+    cursor = db.cursor()
+    try:
+        cursor.execute(query, values)
+    except Error as err:
+        print(err)
+    finally:
+        db.commit()
+        cursor.close()
+
+    return {'response': 'OK'}

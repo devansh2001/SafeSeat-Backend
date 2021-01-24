@@ -29,7 +29,7 @@ CREATE TABLE class_to_room (
     room_id varchar(128) NOT NULL,
     class_id varchar(64),
     timing DATETIME
-)
+);
 
 
 DROP DATABASE gtemhack;
